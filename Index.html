@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Amarmino-Girls Fodbold-Quiz ⚽💖</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      margin: 0;
+      background: linear-gradient(to bottom, #ffe6e6, #fff0f0);
+      color: #333;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1, h2 { text-align: center; color: #d63384; }
+    .category-btn, .nav-btn, .submit-btn {
+      background: #ff8fb3;
+      color: #fff;
+      border: none;
+      padding: 1rem;
+      border-radius: 2rem;
+      margin: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    }
+    .question-container, .result-screen {
+      max-width: 500px;
+      width: 100%;
+      background: #fff0f5;
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin: 1rem 0;
+    }
+    .answers label { display: block; margin: 0.5rem 0; }
+    .hidden { display: none; }
+    @media (max-width:600px) {
+      .category-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h1>⚽ Amarmino-Girls Fodbold-Quiz ⚽</h1>
+  <div id="category-selection">
+    <h2>Vælg en kategori:</h2>
+    <button class="category-btn" onclick="startQuiz('historie')">🏆 Fodboldhistorie</button>
+    <button class="category-btn" onclick="startQuiz('legender')">🌟 Legendariske Spillere</button>
+    <button class="category-btn" onclick="startQuiz('kvinder')">👩‍🦰 Kvindefodbold</button>
+    <button class="category-btn" onclick="startQuiz('statistik')">📊 Statistik & Rekorder</button>
+    <button class="category-btn" onclick="startQuiz('taktik')">🧠 Taktik & Formations</button>
+    <button class="category-btn" onclick="startQuiz('nordisk')">🇩🇰 Nordisk Fodbold</button>
+  </div>
+
+  <div id="quiz-container" class="hidden">
+    <div class="question-container">
+      <h2 id="question-text"></h2>
+      <div class="answers" id="answers-container"></div>
+    </div>
+    <button class="nav-btn" onclick="prevQuestion()">⬅️ Tilbage</button>
+    <button class="nav-btn" onclick="nextQuestion()">➡️ Næste</button>
+    <button class="submit-btn hidden" onclick="submitQuiz()">🎉 Se Resultat</button>
+  </div>
+
+  <div id="result-screen" class="result-screen hidden"></div>
+
+  <script>
+    const questions = {
+      historie: [
+        { question: "Hvem vandt det første VM i fodbold (herrerne) i 1930?", answers: ["Italien","Uruguay","Argentina","Brasilien"], correct: 1 },
+        { question: "Hvilket land har vundet flest VM-titler (herrerne)?", answers: ["Italien","Tyskland","Brasilien","Argentina"], correct: 2 },
+        { question: "Hvornår blev UEFA dannet?", answers: ["1954","1960","1946","1950"], correct: 0 },
+        { question: "Hvem scorede det 'Gyldne Mål' i EM-finalen 1996?", answers: ["Oliver Bierhoff","Dennis Bergkamp","David Platt","Alan Shearer"], correct: 0 },
+        { question: "Hvad hed Champions League før 1992?", answers: ["Europacuppen","UEFA Cup","Cup Winners' Cup","Super Cup"], correct: 0 },
+        { question: "Hvilket hold var det første til at vinde VM to gange i træk?", answers: ["Brasilien","Tyskland","Italien","Argentina"], correct: 0 },
+        { question: "Hvilket land blev afholdt VM 1966 i?", answers: ["England","Mexico","Sovjetunionen","Vesttyskland"], correct: 0 },
+        { question: "Hvem lavede 'Maracanazo' ved VM 1950?", answers: ["Uruguay","Brasilien","Argentina","England"], correct: 0 },
+        { question: "Hvad symboliserer 'golden goal' reglen, fodbold afsluttet med?", answers: ["Første mål i forlænget spilletid","Flest hjørnespark","Højeste sejr","Største tilskuerantal"], correct: 0 },
+        { question: "Hvem vandt Copa América i 1916?","answers":["Argentina","Brasilien","Uruguay","Chile"], correct: 2 }
+      ],
+      legender: [
+        { question: "Hvem havde kælenavnet 'O Fenômeno'?", answers:["Diego Maradona","Pelé","Ronaldo (brasilianer)","Zico"], correct: 2 },
+        { question: "Hvem har rekorden for flest mål i én sæson i La Liga?", answers:["Lionel Messi","Cristiano Ronaldo","Telmo Zarra","Hugo Sánchez"], correct: 0 },
+        { question: "Hvilken italiensk forsvarsspiller var kendt som 'Il Divin Codino'?", answers:["Franco Baresi","Alessandro Nesta","Roberto Baggio","Paolo Maldini"], correct: 2 },
+        { question: "Hvem scorede 125 mål for Tyskland (herrerne)?", answers:["Miroslav Klose","Gerd Müller","Thomas Müller","Jürgen Klinsmann"], correct: 0 },
+        { question: "Hvem kaldte sig 'King Eric' i Manchester United?", answers:["Eric Cantona","Eric Djemba-Djemba","Eric Bailly","Eric Gerrard"], correct: 0 },
+        { question: "Hvem vandt Ballon d'Or i 1995?", answers:["George Weah","Jürgen Klinsmann","Ronaldo (brasilianer)","George Best"], correct: 0 },
+        { question: "Hvem er Argentinas bedste målscorer nogensinde (herrerne)?", answers:["Lionel Messi","Gabriel Batistuta","Diego Maradona","Sergio Agüero"], correct: 0 },
+        { question: "Hvem havde rekorden for flest gule kort i Champions League?", answers:["Pep Guardiola","Xavi","Sergio Ramos","Cristiano Ronaldo"], correct: 2 },
+        { question: "Hvem scorede mest i VM 1970?", answers:["Gerd Müller","Pelé","Eusébio","Teófilo Cubillas"], correct: 0 },
+        { question: "Hvilken spiller var kendt som 'The Special One'?", answers:["José Mourinho","Alex Ferguson","Pep Guardiola","Carlo Ancelotti"], correct: 0 }
+      ],
+      kvinder: [
+        { question: "Hvem har flest landskampsmål for Danmark (kvinder)?", answers:["Merete Pedersen","Pernille Harder","Nadia Nadim","Camilla Andersen"], correct: 0 },
+        { question: "Hvem vandt World Player of the Year 2013 (kvinder)?", answers:["Abby Wambach","Marta","Homare Sawa","Alex Morgan"], correct: 2 },
+        { question: "Hvilken nation har vundet flest VM-titler i kvindefodbold?", answers:["USA","Tyskland","Japan","Brasilien"], correct: 0 },
+        { question: "Hvornår første gang VM for kvinder blev afholdt?", answers:["1991","1995","1987","1999"], correct: 0 },
+        { question: "Hvilken dansk kvindespiller har vundet UEFA Player of the Year?", answers:["Nadia Nadim","Pernille Harder","Sofie Junge","Line Røddik"], correct: 1 },
+        { question: "Hvem vandt Ballon d'Or Féminin 2023?", answers:["Aitana Bonmatí","Alexia Putellas","Sam Kerr","Pernille Harder"], correct: 0 },
+        { question: "Hvem er topscorer i Champions League for kvinder?", answers:["Ada Hegerberg","Toni Duggan","Marta","Birgit Prinz"], correct: 0 },
+        { question: "Hvilket års EM nåede Danmark finalen for kvinder?", answers:["2017","2022","2013","2009"], correct: 0 },
+        { question: "Hvem scorede Danmarks mål i semifinalen ved EM 2017?", answers:["Pernille Harder","Sanne Troelsgaard","Stine Larsen","Nadia Nadim"], correct: 1 },
+        { question: "Hvilken klub vandt UWCL 2023?", answers:["Barcelona","Lyon","Chelsea","Bayern"], correct: 0 }
+      ],
+      statistik: [
+        { question: "Hvem har scoret flest mål i én VM-turnering (herrerne)?", answers:["Just Fontaine","Ronaldo","Gerd Müller","Pelé"], correct: 0 },
+        { question: "Hvem har flest Champions League-titler som spiller?", answers:["Cristiano Ronaldo","Lionel Messi","Paco Gento","Andrés Iniesta"], correct: 2 },
+        { question: "Hvem har flest assist i Premiers League historie?", answers:["Ryan Giggs","Cesc Fàbregas","Wayne Rooney","Frank Lampard"], correct: 0 },
+        { question: "Hvem har rekorden for længste ubesejrede hjemmekamp i CL?", answers:["Barcelona","Real Madrid","Bayern","Juventus"], correct: 0 },
+        { question: "Hvilken spiller har rekorden for hurtigste rødt kort i Premier League?", answers:["Lee Todd","Roy Keane","Wayne Rooney","Gary Neville"], correct: 0 },
+        { question: "Hvilket hold har flest La Liga-titler?", answers:["Barcelona","Real Madrid","Atlético Madrid","Valencia"], correct: 1 },
+        { question: "Hvem har rekorden for flest mål i en Premier League-sæson?", answers:["Alan Shearer","Mohamed Salah","Andy Cole","Sergio Agüero"], correct: 1 },
+        { question: "Hvem har scoret mest i La Liga (herrerne)?", answers:["Lionel Messi","Cristiano Ronaldo","Telmo Zarra","Karim Benzema"], correct: 0 },
+        { question: "Hvem har flest landskampe for Norge (kvinder)?", answers:["Hege Riise","Lise Klaveness","Solveig Gulbrandsen","Camilla Herrem"], correct: 0 },
+        { question: "Hvilket hold har vundet flest Bundesligatitler?", answers:["Bayern München","Borussia Dortmund","Hamburg","Bayer Leverkusen"], correct: 0 }
+      ],
+      taktik: [
+        { question: "Hvad betyder en 4-3-3 formation typisk?", answers:["4 forsvar, 3 midtbane, 3 angreb","4 offensiv, 3 midtbane, 3 forsvar","4 kæder, 3 kant, 3 stød","4 back, 3 front, 3 def"], correct: 0 },
+        { question: "Hvad kaldes det når et hold trækker massivt forsvar dybt?", answers:["Parkering","Catenaccio","Tiki-taka","Gegenpress"], correct: 1 },
+        { question: "Hvad er 'Tiki-taka' karakteriseret ved?", answers:["Lang bold","Repossession","Kort, tæt pasningsspil","Lang distancemode"], correct: 2 },
+        { question: "Hvad betyder 'gegenpress'?", answers:["Moderate pres","Instant genpres efter fejltagelse","Langsom omstilling","Højt forsvar"], correct: 1 },
+        { question: "Hvilken position tilsvarer 'false nine'?", answers:["Dybtliggende angriber","Høj kant","Box-to-box midt","Stopper"], correct: 0 },
+        { question: "Hvad er zonemarkering?", answers:["Spillere har hver sin zone at dække","Mand‑mod‑mand markering","Blokstil forsvar","Frizone"], correct: 0 },
+        { question: "Hvad bruger man en 'libero' til?", answers:["Angrebspush","Bagkæde med fri spiller","Højt pres","Kontratræk"], correct: 1 },
+        { question: "Hvad er kontra‑pres?", answers:["Press efter mistet bold","Drop‑off pres","Forsvarsspil","Spillermarkering"], correct: 0 },
+        { question: "Hvad er et inverted full-back?", answers:["Back der trækker ind ad banen","Back på højre side","Offensiv wing-back","Skadeback"], correct: 0 },
+        { question: "Hvad betegnes 'third man run' som?", answers:["Tredje spiller laver løb for boldholder","Reserve startopstilling","Tredje position i formation","Halven"], correct: 0 }
+      ],
+      nordisk: [
+        { question: "Hvem har flest mål for det svenske landshold (herrerne)?", answers:["Zlatan Ibrahimović","Henrik Larsson","Gunnar Nordahl","Kenneth Andersson"], correct: 2 },
+        { question: "Hvilket nordisk land har kvalificeret sig flest gange til VM (herrerne)?", answers:["Norge","Danmark","Sverige","Finland"], correct: 2 },
+        { question: "Hvornår kvalificerede Finland sig første gang til EM (herrerne)?", answers:["2021","2016","2008","1992"], correct: 0 },
+        { question: "Hvem er Islands topscorer på herrelandsholdet?", answers:["Eiður Guðjohnsen","Gylfi Sigurðsson","Kolbeinn Sigþórsson","Birkir Bjarnason"], correct: 0 },
+        { question: "Hvilken dansk spiller er topscorer i Superligaens historie?", answers:["Morten 'Duncan' Rasmussen","Kasper Junker","Steffen Højer","Peter Møller"], correct: 2 },
+        { question: "Hvem vandt Allsvenskan i 2022?", answers:["AIK","Malmö FF","Djurgården","Hammarby"], correct: 1 },
+        { question: "Hvem blev top scorer i Eliteserien 2023?", answers:["Amahl Pellegrino","Martin Ødegaard","Erling Haaland","Tarik Elyounoussi"], correct: 0 },
+        { question: "Hvilket dansk hold vandt Nordic Bet Liga i 2021?", answers:["Silkeborg IF","Vejle BK","Lyngby","Hobro IK"], correct: 0 },
+        { question: "Hvem har flest landskampe for Danmark (herrerne)?", answers:["Peter Schmeichel","Jon Dahl Tomasson","Simon Kjær","Michael Laudrup"], correct: 0 },
+        { question: "Hvilket nordisk land blev junior-EM-vinder i 2019 (U21)?", answers:["Sverige","Danmark","Norge","Island"], correct: 1 }
+      ]
+    };
+
+    let currentCategory = '';
+    let currentIndex = 0;
+    let userAnswers = [];
+
+    function startQuiz(cat){
+      currentCategory = cat;
+      currentIndex = 0;
+      userAnswers = new Array(10).fill(null);
+      document.getElementById("category-selection").classList.add("hidden");
+      document.getElementById("quiz-container").classList.remove("hidden");
+      showQuestion();
+    }
+
+    function showQuestion(){
+      const q = questions[currentCategory][currentIndex];
+      document.getElementById("question-text").innerText = `Spørgsmål ${currentIndex+1}: ${q.question}`;
+      const html = q.answers.map((a,i)=>`
+        <label><input type="radio" name="answer" value="${i}" ${userAnswers[currentIndex]===i?'checked':''}/> ${a}</label>
+      `).join('');
+      document.getElementById("answers-container").innerHTML = html;
+      document.querySelector('.submit-btn').classList.toggle('hidden', currentIndex!==9);
+    }
+
+    function saveAnswer(){
+      const sel = document.querySelector('input[name="answer"]:checked');
+      if(sel) userAnswers[currentIndex] = parseInt(sel.value);
+    }
+
+    function nextQuestion(){
+      saveAnswer();
+      if(currentIndex<9){ currentIndex++; showQuestion(); }
+    }
+    function prevQuestion(){
+      saveAnswer();
+      if(currentIndex>0){ currentIndex--; showQuestion(); }
+    }
+
+    function submitQuiz(){
+      saveAnswer();
+      let score = 0, html='';
+      questions[currentCategory].forEach((q,i)=>{
+        const u = userAnswers[i], c = q.correct, ok = u===c;
+        if(ok) score++;
+        html += `<div style="margin-bottom:1rem;background:#fff0f5;padding:0.5rem;border-radius:.8rem;box-shadow:0 0 5px rgba(214,51,132,0.3);">
+          <strong>Spørgsmål ${i+1}:</strong> ${q.question}<br/>
+          Dit svar: ${u!==null?q.answers[u]:'<em>Ikke besvaret</em>'} ${ok?'✅':'❌'}<br/>
+          Korrekt: ${q.answers[c]}
+        </div>`;
+      });
+      let title='';
+      if(score<=3) title="😅 Boldbangebaby";
+      else if(score<=6) title="💁 Midtbane Maven";
+      else if(score<=9) title="👑 Stjernespiller";
+      else title="🎉 Ultimate Fodbold Diva";
+      document.getElementById("quiz-container").classList.add("hidden");
+      const r = document.getElementById("result-screen");
+      r.classList.remove("hidden");
+      r.innerHTML = `<h2>Resultat</h2><p>Du fik <strong>${score}/10</strong> rigtige!</p><h3>${title}</h3><div>${html}</div><button class="category-btn" onclick="location.reload()">🔁 Prøv igen</button>`;
+    }
+  </script>
+</body>
+</html>
